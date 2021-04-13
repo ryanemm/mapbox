@@ -25,16 +25,27 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: Text(" Custom Map"),
       ),
-      body: GoogleMap(
-        onMapCreated: _onMapCreated,
-        markers: _markers,
-        initialCameraPosition: CameraPosition(
-          target: LatLng(-25.996243, 28.127526),
-          zoom: 15,
+      body: Container(
+        child: Container(
+          width: screenSize.width,
+          height: screenSize.height * 0.8,
+          child: Stack(
+            children: [
+              GoogleMap(
+                onMapCreated: _onMapCreated,
+                markers: _markers,
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(-25.996243, 28.127526),
+                  zoom: 15,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
