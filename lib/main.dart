@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mapbox/screens/google_map_screen.dart';
+import 'package:mapbox/src/blocs/application_bloc.dart';
+import 'package:mapbox/src/screens/google_map_screen.dart';
+import 'package:mapbox/src/components/search_bar.dart';
+import "package:provider/provider.dart";
 
 void main() {
   runApp(MyApp());
@@ -8,12 +11,15 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-          primarySwatch: Colors.indigo,
-          visualDensity: VisualDensity.adaptivePlatformDensity),
-      debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+    return ChangeNotifierProvider(
+      create: (context) => ApplicationBloc(),
+      child: MaterialApp(
+        theme: ThemeData(
+            primarySwatch: Colors.indigo,
+            visualDensity: VisualDensity.adaptivePlatformDensity),
+        debugShowCheckedModeBanner: false,
+        home: GoogleMapScreen(),
+      ),
     );
   }
 }
@@ -29,6 +35,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            SearchBar(),
             Text(
               "test",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

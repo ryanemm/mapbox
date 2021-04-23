@@ -1,5 +1,9 @@
 import "package:flutter/material.dart";
 import "package:google_maps_flutter/google_maps_flutter.dart";
+import 'package:mapbox/src/blocs/application_bloc.dart';
+import "package:mapbox/src/components/search_bar.dart";
+//import "package:google_place/google_place.dart";
+import "package:provider/provider.dart";
 
 class GoogleMapScreen extends StatefulWidget {
   @override
@@ -8,6 +12,7 @@ class GoogleMapScreen extends StatefulWidget {
 
 class _GoogleMapScreenState extends State<GoogleMapScreen> {
   Set<Marker> _markers = {};
+  final applicationBloc = ApplicationBloc();
 
   void _onMapCreated(GoogleMapController controller) {
     controller.setMapStyle(Utils.mapStyle);
@@ -25,29 +30,79 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final applicationBloc = Provider.of<ApplicationBloc>(context);
     Size screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(" Custom Map"),
-      ),
-      body: Container(
-        child: Container(
-          width: screenSize.width,
-          height: screenSize.height * 0.8,
-          child: Stack(
-            children: [
-              GoogleMap(
-                onMapCreated: _onMapCreated,
-                markers: _markers,
-                initialCameraPosition: CameraPosition(
-                  target: LatLng(-25.996243, 28.127526),
-                  zoom: 15,
+      body: (applicationBloc.currentLocation == null)
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : Stack(
+              //height: screenSize.height * 0.8,
+              //child: Column(
+              //children: [
+              //SearchBar(),
+
+              //height: screenSize.height * 0.8,
+              children: [
+                GoogleMap(
+                  onMapCreated: _onMapCreated,
+                  myLocationEnabled: true,
+                  markers: _markers,
+                  initialCameraPosition: CameraPosition(
+                    target: LatLng(applicationBloc.currentLocation.latitude,
+                        applicationBloc.currentLocation.longitude),
+                    zoom: 15,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
+                Positioned(
+                  bottom: 30,
+                  left: 30,
+                  child: FloatingActionButton(
+                    onPressed: () {},
+                    child: Icon(Icons.location_city_outlined),
+                  ),
+                ),
+                Positioned(
+                  top: 60,
+                  left: 10,
+                  child: SearchBar(),
+                ),
+                if (applicationBloc.searchResults != null &&
+                    applicationBloc.searchResults.length != 0)
+                  Container(
+                    child: Container(
+                      height: 300,
+                      width: screenSize.width,
+                      decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          backgroundBlendMode: BlendMode.darken),
+                    ),
+                  ),
+                if (applicationBloc.searchResults != null)
+                  Container(
+                    child: Container(
+                        height: 300,
+                        width: screenSize.width,
+                        decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            backgroundBlendMode: BlendMode.darken),
+                        child: ListView.builder(
+                          itemCount: applicationBloc.searchResults.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              title: Text(
+                                applicationBloc
+                                    .searchResults[index].description,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            );
+                          },
+                        )),
+                  ),
+              ],
+            ),
     );
   }
 }
