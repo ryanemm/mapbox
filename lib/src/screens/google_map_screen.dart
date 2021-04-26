@@ -4,6 +4,8 @@ import 'package:mapbox/src/blocs/application_bloc.dart';
 import "package:mapbox/src/components/search_bar.dart";
 //import "package:google_place/google_place.dart";
 import "package:provider/provider.dart";
+import "dart:async";
+import "package:mapbox/src/models/place.dart";
 
 class GoogleMapScreen extends StatefulWidget {
   @override
@@ -27,6 +29,8 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
       );
     });
   }
+
+  Completer<GoogleMapController> _mapController = Completer();
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +73,7 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
                   left: 10,
                   child: SearchBar(),
                 ),
-                if (applicationBloc.searchResults != null &&
+                /*if (applicationBloc.searchResults != null &&
                     applicationBloc.searchResults.length != 0)
                   Container(
                     child: Container(
@@ -79,8 +83,9 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
                           color: Colors.black.withOpacity(0.6),
                           backgroundBlendMode: BlendMode.darken),
                     ),
-                  ),
-                if (applicationBloc.searchResults != null)
+                  ),*/
+                if (applicationBloc.searchResults != null &&
+                    applicationBloc.searchResults.length != 0)
                   Container(
                     child: Container(
                         height: 300,
@@ -103,6 +108,16 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
                   ),
               ],
             ),
+    );
+  }
+
+  Future<void> _goToPlace(Place place) async {
+    final GoogleMapController controller = await _mapController.future;
+    controller.animateCamera(
+      CameraUpdate.newCameraPosition(CameraPosition(
+          target:
+              LatLng(place.geometry.location.lat, place.geometry.location.lng),
+          zoom: 15)),
     );
   }
 }
