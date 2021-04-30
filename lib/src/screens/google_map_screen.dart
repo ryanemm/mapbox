@@ -32,6 +32,32 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
 
   Completer<GoogleMapController> _mapController = Completer();
 
+  StreamSubscription locationSubscription;
+
+  @override
+  void initState() {
+    final applicationBloc =
+        Provider.of<ApplicationBloc>(context, listen: false);
+
+    locationSubscription =
+        applicationBloc.selectedLocation.stream.listen((place) {
+      if (place != null) {
+        _goToPlace(place);
+      }
+    });
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    final applicationBloc =
+        Provider.of<ApplicationBloc>(context, listen: false);
+    applicationBloc.dispose();
+    locationSubscription.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final applicationBloc = Provider.of<ApplicationBloc>(context);
@@ -51,7 +77,10 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
               //height: screenSize.height * 0.8,
               children: [
                 GoogleMap(
-                  onMapCreated: _onMapCreated,
+                  onMapCreated: (GoogleMapController controller) {
+                    _mapController.complete(controller);
+                    controller.setMapStyle(Utils.mapStyle);
+                  },
                   myLocationEnabled: true,
                   markers: _markers,
                   initialCameraPosition: CameraPosition(
@@ -88,23 +117,27 @@ class _GoogleMapScreenState extends State<GoogleMapScreen> {
                     applicationBloc.searchResults.length != 0)
                   Container(
                     child: Container(
-                        height: 300,
-                        width: screenSize.width,
-                        decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
-                            backgroundBlendMode: BlendMode.darken),
-                        child: ListView.builder(
-                          itemCount: applicationBloc.searchResults.length,
-                          itemBuilder: (context, index) {
-                            return ListTile(
-                              title: Text(
-                                applicationBloc
-                                    .searchResults[index].description,
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            );
-                          },
-                        )),
+                      height: 300,
+                      width: screenSize.width,
+                      decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          backgroundBlendMode: BlendMode.darken),
+                      child: ListView.builder(
+                        itemCount: applicationBloc.searchResults.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: Text(
+                              applicationBloc.searchResults[index].description,
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            onTap: () {
+                              applicationBloc.setSelectedLocation(
+                                  applicationBloc.searchResults[index].placeId);
+                            },
+                          );
+                        },
+                      ),
+                    ),
                   ),
               ],
             ),
